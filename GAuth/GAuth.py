@@ -1,5 +1,5 @@
 import base64
-from GAuth.TotpCode import KeyData
+from GAuth.TotpCode import TotpCode
     
 def parse_url_query(url):
     result = {
@@ -14,8 +14,7 @@ def parse_url_query(url):
         result['proto'] = parts[0]
         url = parts[1]
     else:
-        # Default to http if no protocol specified
-        result['proto'] = None
+        result['proto'] = "otpauth"
     
     # Split URL and query string
     parts = url.split('?', 1)
@@ -65,7 +64,7 @@ def decode_base64(encoded_str):
         except Exception:
             # Return as bytes if it cannot be decoded to text
             return decoded_bytes
-    except Exception as e:
+    except Exception as e: 
         print(f"Error decoding Base64: {e}")
         return None
 
@@ -107,7 +106,7 @@ def parseExportData(data):
         val = hex(data[index-1]),hex(data[index]),hex(data[index+1]),hex(data[index+2]),hex(data[index+3])
         if data[index] == 0x10:
             more = False
-        key_data = KeyData(account,secret,issuer)
+        key_data = TotpCode(account,secret,issuer)
         list.append(key_data)
     return list
 
@@ -133,7 +132,7 @@ def decode_import_urldata(url_data):
     
     if algorithm.upper() != "SHA1":
         print(f"Error: only SHA1 supported, got \'{algorithm}\'")
-    key = KeyData(account,secret,issuer,algorithm,digits,interval)
+    key = TotpCode(account,secret,issuer,algorithm,digits,interval)
     return [key]
 
 def decode_url(url):

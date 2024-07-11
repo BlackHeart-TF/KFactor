@@ -1,6 +1,6 @@
 class TotpCode:
     import time,hmac
-    def __init__(self, account,secret, issuer=None, algorithm='SHA1', digits=6, interval=30):
+    def __init__(self, account,secret, issuer=None, algorithm='SHA1', digits=6, period=30):
         """
         Initialize the TOTP KeyData object.
 
@@ -15,15 +15,15 @@ class TotpCode:
         self.issuer = issuer
         self.account = account
         self.algorithm = algorithm
-        self.digits = digits
-        self.interval = interval
+        self.digits = int(digits)
+        self.period = int(period)
 
     def base32_decode(encoded:str):
         base32_alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
         
         # Convert the Base32 encoded string to a string of bits
         bits = ""
-        for char in encoded.upper().rstrip('='):
+        for char in encoded.upper().rstrip('=\x00'):
             if char in base32_alphabet:
                 # Find the index of the char in the alphabet
                 index = base32_alphabet.index(char)
@@ -47,7 +47,7 @@ class TotpCode:
 
     def GetCode(self):
         # Calculate the TOTP counter
-        counter = int(TotpCode.time.time() // self.interval)
+        counter = int(TotpCode.time.time() // self.period)
         # Convert counter to byte array in big-endian order
         counter_bytes = counter.to_bytes(8, 'big')
         # Create HMAC object with SHA-1
@@ -64,7 +64,7 @@ class TotpCode:
     
     def GetInterval(self):
         # Calculate the percentage within the current interval
-        percentage = (TotpCode.time.time() % self.interval) / self.interval
+        percentage = (TotpCode.time.time() % self.period) / self.period
         
         # Convert percentage to a range of 1-100
         interval_percentage = 100-int(percentage * 100) 
@@ -74,7 +74,8 @@ class TotpCode:
         """
         String representation of the KeyData object, for debugging and logging, or importing.
         """
-        return f"otpauth://totp/{self.account}?secret={self.secret}&issuer={self.issuer}&algorithm={self.algorithm}&digits={self.digits}&period={self.interval}"
+        from GAuth.GAuth import encode_base32
+        return f"otpauth://totp/{self.account}?account={self.account}&secret={encode_base32(self.secret)}&issuer={self.issuer}&algorithm={self.algorithm}&digits={self.digits}&period={self.period}"
         
     def to_dict(self):
         """
@@ -86,7 +87,7 @@ class TotpCode:
             'account': self.account,
             'algorithm': self.algorithm,
             'digits': self.digits,
-            'interval': self.interval,
+            'period': self.period,
         }
 
     @classmethod
@@ -95,3 +96,12 @@ class TotpCode:
         Deserialize a dictionary into a KeyData object.
         """
         return cls(**data)
+    
+    @classmethod
+    def from_otpauth(cls, uri:str):
+        """
+        Deserialize a Uri into a KeyData object.
+        """
+        from GAuth.GAuth import parse_url_query
+        codes = parse_url_query(uri)
+        return cls(**codes['query'])
