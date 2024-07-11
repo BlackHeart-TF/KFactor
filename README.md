@@ -1,10 +1,11 @@
-KFactor - 2FA Code Generator
+KFactor - 2FA Authenticator
 =============================
 This is a TOTP Authentication Code generator made with Python and QT. It aims to be a drop in replacement for Google Authenticator for plasma-mobile.
-Testing on 
--Manjaro/Pinephone, 
--Kubuntu/x64 PC, 
--Windows/x64 PC
+
+### Tested on 
+- Manjaro/Pinephone, 
+- Kubuntu/x64 PC, 
+- Windows/x64 PC
 
 ## Status
 ### Working:
@@ -15,3 +16,7 @@ Testing on
 - the UI buttons
 - importing codes (planning serial/barcode scanner, camera, manual entry)
 - secure key storage (planning to use keyring)
+
+## Screenshots
+### Pinephone Pro on Majaro
+![Pinephone Screenshot](https://i.imgur.com/TXtywTF.png)

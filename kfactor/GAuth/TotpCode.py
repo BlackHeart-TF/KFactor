@@ -74,7 +74,7 @@ class TotpCode:
         """
         String representation of the KeyData object, for debugging and logging, or importing.
         """
-        from GAuth.GAuth import encode_base32
+        from .GAuth import encode_base32
         return f"otpauth://totp/{self.account}?account={self.account}&secret={encode_base32(self.secret)}&issuer={self.issuer}&algorithm={self.algorithm}&digits={self.digits}&period={self.period}"
         
     def to_dict(self):
@@ -102,6 +102,6 @@ class TotpCode:
         """
         Deserialize a Uri into a KeyData object.
         """
-        from GAuth.GAuth import parse_url_query
+        from .GAuth import parse_url_query
         codes = parse_url_query(uri)
         return cls(**codes['query'])

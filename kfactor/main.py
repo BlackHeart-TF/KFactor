@@ -1,7 +1,9 @@
+import sys,os
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from PySide6.QtCore import Qt,QTimer
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (QMainWindow, QListWidget, QVBoxLayout, QHBoxLayout, QPushButton, QWidget,QListWidgetItem,QLabel,QGridLayout,QFrame,
-                                QProgressBar,QSizePolicy)
+                                QProgressBar,QSizePolicy,QMessageBox)
 from GAuth.TotpCode import TotpCode
 
 class MainWindow(QMainWindow):
@@ -11,7 +13,7 @@ class MainWindow(QMainWindow):
         self.initUI()
 
     def initUI(self):
-        self.setWindowTitle("KFactor - 2FA Code Generator")
+        self.setWindowTitle("KFactor - 2FA Authenticator")
         self.setGeometry(100, 100, 800, 600)
 
         mainWidget = QWidget()
@@ -41,19 +43,24 @@ class MainWindow(QMainWindow):
         
         # Add buttons to the sidebar (for demonstration purposes)
         add_icon = QIcon.fromTheme("list-add")
-        button1 = QPushButton(add_icon,"Add")
+        addButton = QPushButton(add_icon,"Add")
+        addButton.clicked.connect(self.addCode)
         remove_icon = QIcon.fromTheme("list-remove")
         button4 = QPushButton(remove_icon,"Remove")
         import_icon = QIcon.fromTheme("document-open")
         button2 = QPushButton(import_icon,"Import")
         export_icon = QIcon.fromTheme("document-save")
         button3 = QPushButton(export_icon,"Export")
-        sidebarLayout.addWidget(button1)
+        settings_icon = QIcon.fromTheme("preferences-system")
+        settingsbutton = QPushButton(settings_icon,"Settings")
+        settingsbutton.clicked.connect(self.show_settings)
+        sidebarLayout.addWidget(addButton)
         sidebarLayout.addWidget(button4)
         sidebarLayout.addSpacing(25)
         sidebarLayout.addWidget(button2)
         sidebarLayout.addWidget(button3)
         sidebarLayout.addStretch(1)
+        sidebarLayout.addWidget(settingsbutton)
 
         layout.addWidget(self.sidebar)
         layout.addLayout(mainlayout)
@@ -66,6 +73,30 @@ class MainWindow(QMainWindow):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_list)
         
+    def show_error(self,message:str):
+        print(message)
+        msg_box = QMessageBox()
+        msg_box.setIcon(QMessageBox.Critical)
+        msg_box.setText(message)
+        msg_box.setWindowTitle("Error")
+        msg_box.setStandardButtons(QMessageBox.Ok)
+        msg_box.exec()
+
+    def addCode(self,event):
+        from Controls.ModalOverlay import ModalOverlay
+        from Controls.SerialScanBarcodePanel import SerialScanBarcodePanel
+        dlg = ModalOverlay(self,SerialScanBarcodePanel())
+        dlg.show()
+        dlg.Wait()
+        if dlg.content.code and dlg.content.code.lower().startswith("otpauth"):
+            totp = TotpCode.from_otpauth(dlg.content.code)
+            if totp:
+                self.addItem(totp)
+            else:
+                self.show_error("Error Parsing Code")
+        elif dlg.content.code:
+            print(f"Invalid code, only otpauth accpeted: {dlg.content.code}")
+
     def update_list(self):
         for i in range(self.listWidget.count()):
             item = self.listWidget.item(i)
@@ -79,6 +110,13 @@ class MainWindow(QMainWindow):
 
     def hideEvent(self, event):
         self.timer.stop()
+
+    def show_settings(self):
+        from Controls.ModalOverlay import ModalOverlay
+        from Controls.SettingsPage import SettingsPage
+        self.settings_page = SettingsPage(self)
+        overlay = ModalOverlay(self,self.settings_page)
+        overlay.show()
 
     def addItem(self,code:TotpCode):
         item = QListWidgetItem()
@@ -127,6 +165,7 @@ class MainWindow(QMainWindow):
             self.sidebar.hide()
         else:
             self.sidebar.show()
+
     def customResizeEvent(self, event):
         # Override the resize event to handle sidebar visibility
         self.updateSidebarVisibility()
@@ -141,8 +180,7 @@ class MainWindow(QMainWindow):
             self.sidebar.hide()
             self.menuButton.show()
 
-
-if __name__ == "__main__":
+def launch():
     import sys
     from PySide6.QtWidgets import QApplication
 
@@ -150,8 +188,12 @@ if __name__ == "__main__":
     window = MainWindow()
     window.show()
     window.addItem(TotpCode("test","PASSWORD"))
-    b64= TotpCode("test2","OBQXG43XN5ZGI===")
-    window.addItem(b64)
-    window.addItem(TotpCode.from_otpauth(str(b64)))
+    totp= TotpCode("test2","OBQXG43XN5ZGI===")
+    window.addItem(totp)
+    print(str(totp))
+    window.addItem(TotpCode.from_otpauth(str(totp)))
     #window.addItem({"title":"More Secrets","number":654321})
     sys.exit(app.exec())
+
+if __name__ == "__main__":
+    launch()    

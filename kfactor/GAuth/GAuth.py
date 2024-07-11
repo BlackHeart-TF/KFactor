@@ -1,5 +1,5 @@
 import base64
-from GAuth.TotpCode import TotpCode
+from .TotpCode import TotpCode
     
 def parse_url_query(url):
     result = {
