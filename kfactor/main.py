@@ -5,11 +5,12 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (QMainWindow, QListWidget, QVBoxLayout, QHBoxLayout, QPushButton, QWidget,QListWidgetItem,QLabel,QGridLayout,QFrame,
                                 QProgressBar,QSizePolicy,QMessageBox)
 from GAuth.TotpCode import TotpCode
+from Function.KeyringHelper import KeyringHelper
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-
+        self.keyring = KeyringHelper("KFactor")
         self.initUI()
 
     def initUI(self):
@@ -103,9 +104,11 @@ class MainWindow(QMainWindow):
             item.update()
 
     def showEvent(self, event):
-        for i in range(self.listWidget.count()):
-            item = self.listWidget.item(i)
-            item.update()
+        entries = self.keyring.retrieve_entries()
+        if entries:
+            for entry in entries:
+                self.addItem(TotpCode.from_dict(entry))
+        self.update_list()
         self.timer.start(500)
 
     def hideEvent(self, event):
@@ -160,6 +163,9 @@ class MainWindow(QMainWindow):
         self.listWidget.addItem(item)
         self.listWidget.setItemWidget(item, frame)
 
+        #self.keyring.store_totp_entry(code.account,code)
+
+
     def showMenu(self):
         if self.sidebar.isVisible():
             self.sidebar.hide()
@@ -190,10 +196,9 @@ def launch():
     window.addItem(TotpCode("test","PASSWORD"))
     totp= TotpCode("test2","OBQXG43XN5ZGI===")
     window.addItem(totp)
-    print(str(totp))
     window.addItem(TotpCode.from_otpauth(str(totp)))
     #window.addItem({"title":"More Secrets","number":654321})
     sys.exit(app.exec())
 
 if __name__ == "__main__":
-    launch()    
+    launch()

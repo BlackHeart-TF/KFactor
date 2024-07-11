@@ -11,6 +11,7 @@ This is a TOTP Authentication Code generator made with Python and QT. It aims to
 ### Working:
 - TOTP Code generation from Base32 keys
 - internal parser for "otpauth" and "otpauth-migration" Uri from QR codes
+- Serial QR scanner support
 
 ### Not Working:
 - the UI buttons
