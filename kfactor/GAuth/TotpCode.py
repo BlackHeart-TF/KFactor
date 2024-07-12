@@ -11,7 +11,7 @@ class TotpCode:
         :param digits: The length of the TOTP code, typically 6 or 8 digits.
         :param interval: The time step in seconds for which each TOTP code is valid, commonly 30 seconds.
         """
-        self.secret = TotpCode.base32_decode(secret)
+        self.secret = secret
         self.issuer = issuer
         self.account = account
         self.algorithm = algorithm
@@ -51,7 +51,7 @@ class TotpCode:
         # Convert counter to byte array in big-endian order
         counter_bytes = counter.to_bytes(8, 'big')
         # Create HMAC object with SHA-1
-        hmacc = TotpCode.hmac.new(self.secret, counter_bytes, 'sha1')
+        hmacc = TotpCode.hmac.new(TotpCode.base32_decode(self.secret), counter_bytes, 'sha1')
         hmac_digest = hmacc.digest()
         # Dynamic truncation
         offset = hmac_digest[-1] & 0x0F
@@ -75,7 +75,7 @@ class TotpCode:
         String representation of the KeyData object, for debugging and logging, or importing.
         """
         from .GAuth import encode_base32
-        return f"otpauth://totp/{self.account}?account={self.account}&secret={encode_base32(self.secret)}&issuer={self.issuer}&algorithm={self.algorithm}&digits={self.digits}&period={self.period}"
+        return f"otpauth://totp/{self.account}?account={self.account}&secret={self.secret}&issuer={self.issuer}&algorithm={self.algorithm}&digits={self.digits}&period={self.period}"
         
     def to_dict(self):
         """

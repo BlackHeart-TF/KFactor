@@ -12,11 +12,11 @@ This is a TOTP Authentication Code generator made with Python and QT. It aims to
 - TOTP Code generation from Base32 keys
 - internal parser for "otpauth" and "otpauth-migration" Uri from QR codes
 - Serial QR scanner support
+- Secure? key storage with 'keyring'
 
 ### Not Working:
-- the UI buttons
-- importing codes (planning serial/barcode scanner, camera, manual entry)
-- secure key storage (planning to use keyring)
+- the remove/import/export buttons
+- importing codes (planning camera, manual entry)
 
 ## Screenshots
 ### Pinephone Pro on Majaro

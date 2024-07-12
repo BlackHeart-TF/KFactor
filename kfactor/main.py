@@ -11,6 +11,8 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.keyring = KeyringHelper("KFactor")
+        #totp= TotpCode("test2","OBQXG43XN5ZGI===")
+        #self.keyring.store_totp_entry(totp.account,totp.to_dict())
         self.initUI()
 
     def initUI(self):
@@ -93,6 +95,7 @@ class MainWindow(QMainWindow):
             totp = TotpCode.from_otpauth(dlg.content.code)
             if totp:
                 self.addItem(totp)
+                self.keyring.store_totp_entry(totp.account,totp.to_dict())
             else:
                 self.show_error("Error Parsing Code")
         elif dlg.content.code:
@@ -106,7 +109,7 @@ class MainWindow(QMainWindow):
     def showEvent(self, event):
         entries = self.keyring.retrieve_entries()
         if entries:
-            for entry in entries:
+            for name,entry in entries.items():
                 self.addItem(TotpCode.from_dict(entry))
         self.update_list()
         self.timer.start(500)
@@ -163,9 +166,6 @@ class MainWindow(QMainWindow):
         self.listWidget.addItem(item)
         self.listWidget.setItemWidget(item, frame)
 
-        #self.keyring.store_totp_entry(code.account,code)
-
-
     def showMenu(self):
         if self.sidebar.isVisible():
             self.sidebar.hide()
@@ -193,11 +193,10 @@ def launch():
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
-    window.addItem(TotpCode("test","PASSWORD"))
-    totp= TotpCode("test2","OBQXG43XN5ZGI===")
-    window.addItem(totp)
-    window.addItem(TotpCode.from_otpauth(str(totp)))
-    #window.addItem({"title":"More Secrets","number":654321})
+    #window.addItem(TotpCode("test","PASSWORD"))
+    #totp= TotpCode("test2","OBQXG43XN5ZGI===")
+    #window.addItem(totp)
+    #window.addItem(TotpCode.from_otpauth(str(totp)))
     sys.exit(app.exec())
 
 if __name__ == "__main__":
