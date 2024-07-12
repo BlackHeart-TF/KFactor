@@ -1,5 +1,5 @@
 import base64
-from .TotpCode import TotpCode
+from .TotpCode import TotpCode,Algorithm,DigitCount
     
 def parse_url_query(url):
     result = {
@@ -90,23 +90,47 @@ def parseExportData(data):
         entry_len =  data[index+1] #seems to be length starting after key
         val = hex(data[entry_len]),hex(data[entry_len+1]),hex(data[entry_len+2]),hex(data[entry_len+3])
         iindex = index +1
-        for i in range(3):
+        secret,account,issuer,algorithm,digits,period = None,None,None,"SHA1",6,30
+        hex_string = ''.join([f'{byte:02x} ' for byte in data])
+        print(hex_string)
+        hex_string = ''.join([f'{byte} ' for byte in data])
+        for b in data:
+            try:
+                # Decode the byte to a character if possible
+                char = chr(b) if 0x20 <= b < 0x7F else '.'
+                print(f"{b:02x} {b} {char}")
+            except UnicodeDecodeError:
+                # Use '.' for bytes that can't be decoded
+                print(f"{b:02x} {b} .")
+
+        #print(hex_string)
+        while iindex < len(data):
+        #for i in range(3):
+            
             fieldid = data[iindex+1]
             data_len = data[iindex+2]
-
+            debugdata = data[iindex:iindex+3 + data_len]
             if fieldid == 10: #secret
                 secret = encode_base32(data[iindex+3:iindex+3 + data_len])
-            if fieldid == 0x12: #account
+            elif fieldid == 0x12: #account
                 account = str(data[iindex+3:iindex+3 + data_len].decode('utf-8'))
-            if fieldid == 0x1a: #issuer
+            elif fieldid == 0x1a: #issuer
                 issuer = str(data[iindex+3:iindex+3 + data_len].decode('utf-8'))
+            elif fieldid == 0x20: #unknown
+                algorithm = Algorithm.toAlgoString(data_len)
+            elif fieldid == 0x28: #unknown
+                digits = DigitCount.toCount(data_len)
+            elif fieldid == 0x30: #OTPtype
+                pass
+            else:
+                print(f"Unknown field: 0x{fieldid:X}")
             
             iindex += data_len+2
         index += entry_len+2
         val = hex(data[index-1]),hex(data[index]),hex(data[index+1]),hex(data[index+2]),hex(data[index+3])
         if data[index] == 0x10:
             more = False
-        key_data = TotpCode(account,secret,issuer)
+        key_data = TotpCode(account,secret,issuer,algorithm,digits,period)
         list.append(key_data)
     return list
 

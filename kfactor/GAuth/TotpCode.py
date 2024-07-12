@@ -1,3 +1,38 @@
+
+class Algorithm:
+    UNSPECIFIED = 0
+    SHA1 = 1
+    SHA256 = 2
+    SHA512 = 3
+    MD5 = 4
+
+    @staticmethod
+    def toAlgoString(index):
+        if index == 0:
+            return "SHA1"
+        elif index == 1:
+            return "SHA1"
+        elif index == 2:
+            return "SHA256"
+        elif index == 3:
+            return "SHA512"
+        elif index == 4:
+            return "MD5"
+    
+class DigitCount:
+    UNSPECIFIED = 0
+    SIX = 1
+    EIGHT = 2
+
+    @staticmethod
+    def toCount(index):
+        if index == 0:
+            return 6
+        elif index == 1:
+            return 6
+        elif index == 2:
+            return 8
+
 class TotpCode:
     import time,hmac
     def __init__(self, account,secret, issuer=None, algorithm='SHA1', digits=6, period=30):

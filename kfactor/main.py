@@ -47,21 +47,28 @@ class MainWindow(QMainWindow):
         # Add buttons to the sidebar (for demonstration purposes)
         add_icon = QIcon.fromTheme("list-add")
         addButton = QPushButton(add_icon,"Add")
-        addButton.clicked.connect(self.addCode)
+        addButton.clicked.connect(self.scanCode
+                                  )
         remove_icon = QIcon.fromTheme("list-remove")
         button4 = QPushButton(remove_icon,"Remove")
+
         import_icon = QIcon.fromTheme("document-open")
-        button2 = QPushButton(import_icon,"Import")
+        importButton = QPushButton(import_icon,"Import")
+        importButton.clicked.connect(self.scanMigration)
+
         export_icon = QIcon.fromTheme("document-save")
-        button3 = QPushButton(export_icon,"Export")
+        exportButton = QPushButton(export_icon,"Export")
+        exportButton.clicked.connect(self.exportCode)
+
         settings_icon = QIcon.fromTheme("preferences-system")
         settingsbutton = QPushButton(settings_icon,"Settings")
         settingsbutton.clicked.connect(self.show_settings)
+
         sidebarLayout.addWidget(addButton)
         sidebarLayout.addWidget(button4)
         sidebarLayout.addSpacing(25)
-        sidebarLayout.addWidget(button2)
-        sidebarLayout.addWidget(button3)
+        sidebarLayout.addWidget(importButton)
+        sidebarLayout.addWidget(exportButton)
         sidebarLayout.addStretch(1)
         sidebarLayout.addWidget(settingsbutton)
 
@@ -85,7 +92,7 @@ class MainWindow(QMainWindow):
         msg_box.setStandardButtons(QMessageBox.Ok)
         msg_box.exec()
 
-    def addCode(self,event):
+    def scanCode(self,event):
         from Controls.ModalOverlay import ModalOverlay
         from Controls.SerialScanBarcodePanel import SerialScanBarcodePanel
         dlg = ModalOverlay(self,SerialScanBarcodePanel())
@@ -100,6 +107,25 @@ class MainWindow(QMainWindow):
                 self.show_error("Error Parsing Code")
         elif dlg.content.code:
             print(f"Invalid code, only otpauth accpeted: {dlg.content.code}")
+
+    def scanMigration(self,event):
+        from Controls.ModalOverlay import ModalOverlay
+        from Controls.SerialScanBarcodePanel import SerialScanBarcodePanel
+        from GAuth.GAuth import decode_url
+        dlg = ModalOverlay(self,SerialScanBarcodePanel())
+        dlg.show()
+        dlg.Wait()
+        if dlg.content.code and dlg.content.code.lower().startswith("otpauth-migration://"):
+            migration = decode_url(dlg.content.code)
+            for totp in migration:
+                self.addItem(totp)
+                self.keyring.store_totp_entry(totp.account,totp.to_dict())
+        elif dlg.content.code:
+            print(f"Invalid code, only otpauth accpeted: {dlg.content.code}")
+
+    def exportCode(self):
+           from GAuth.GAuth import decode_url
+           migration = decode_url("otpauth-migration://offline?data=CjsKFHl4ZzJ2cUZRSlJpYWx0MDR4bERGEhRGaXJlZm94Om5vaXJlQGdteC5jYRoHRmlyZWZveCABKAEwAhABGAEgACiljsu5BQ%3D%3D")
 
     def update_list(self):
         for i in range(self.listWidget.count()):
