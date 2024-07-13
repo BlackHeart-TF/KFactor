@@ -17,12 +17,13 @@ This is still very early in development and may change, always keep backups of y
 - Serial QR scanner support
 - Secure? key storage with 'keyring'
 
-### Coming Soon:
-- The remove/import/export buttons
-- Importing codes from camera
-- Manual code editor
-- Better key management
-- Export to QR or JSON
+### Issues:
+- migration codes are buggy
+- remove/export buttons not implemented
+- Importing codes from camera, working but not implemented
+- No manual code editor
+- Not sure how secure dumping keys in kwallet is
+- No Export function (planning QR or JSON)
 
 ## Installation
 It can be installed directly as a pip module with

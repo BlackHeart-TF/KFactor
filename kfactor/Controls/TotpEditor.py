@@ -1,9 +1,10 @@
 from PySide6.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QVBoxLayout, QFormLayout, QLineEdit, QPushButton, QSpinBox, QLabel
+    QApplication, QMainWindow, QWidget, QVBoxLayout, QFormLayout, QLineEdit, QPushButton, QSpinBox,
+    QLabel, QComboBox
 )
 from PySide6.QtGui import QIcon
 from PySide6.QtCore import QSize, Qt
-
+from GAuth.TotpCode import Algorithm
 
 class TOTPEditor(QWidget):
     def __init__(self):
@@ -27,13 +28,18 @@ class TOTPEditor(QWidget):
         self.digits_input = QSpinBox()
         self.digits_input.setRange(1, 10)
         self.digits_input.setValue(6)
-
+        self.combo_box = QComboBox()
+        self.combo_box.addItem("SHA1", Algorithm.SHA1)
+        self.combo_box.addItem("SHA256", Algorithm.SHA256)
+        self.combo_box.addItem("SHA512", Algorithm.SHA512)
+        self.combo_box.addItem("MD5", Algorithm.MD5)
         # Add form fields to layout
         form_layout.addRow("Name:", self.name_input)
         form_layout.addRow("Secret Key:", self.secret_input)
         form_layout.addRow("Issuer:", self.issuer_input)
         form_layout.addRow("Period:", self.period_input)
         form_layout.addRow("Digits:", self.digits_input)
+        form_layout.addRow("Algorithm:", self.combo_box)
 
         layout.addLayout(form_layout)
 
@@ -53,6 +59,7 @@ class TOTPEditor(QWidget):
         issuer = self.issuer_input.text()
         period = self.period_input.value()
         digits = self.digits_input.value()
+        algorithm = self.combo_box.itemData(index)
 
         # Print collected data (for now, can be replaced with further processing)
         print(f"Name: {name}")
@@ -60,6 +67,7 @@ class TOTPEditor(QWidget):
         print(f"Issuer: {issuer}")
         print(f"Period: {period}")
         print(f"Digits: {digits}")
+        print(f"Algorithm: {algorithm} ({Algorithm.toAlgoString(algorithm)})")
 
         # Clear inputs after submission
         self.name_input.clear()
@@ -67,6 +75,7 @@ class TOTPEditor(QWidget):
         self.issuer_input.clear()
         self.period_input.setValue(1)
         self.digits_input.setValue(1)
+        self.combo_box.setCurrentIndex(0)
 
 
 class MainWindow(QMainWindow):

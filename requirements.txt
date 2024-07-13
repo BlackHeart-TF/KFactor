@@ -1,3 +1,5 @@
 keyring
 qrcode
 pyserial
+pyzbar
+opencv-python
