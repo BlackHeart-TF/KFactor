@@ -49,7 +49,7 @@ class QRCameraWidget(QWidget):
         painter.setRenderHint(QPainter.Antialiasing)
         painter.setBrush(self.palette().window().color())
         painter.setPen(Qt.NoPen)
-        painter.drawRoundedRect(self.rect(), 10, 10)
+        painter.drawRect(self.rect())
 
     @Slot()
     def update_frame(self):

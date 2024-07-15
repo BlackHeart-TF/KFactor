@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QVBoxLayout, QFormLayout, QLineEdit, QPushButton, QSpinBox,
+    QApplication, QMainWindow, QWidget, QVBoxLayout, QFormLayout, QLineEdit, QPushButton, QSpinBox, QSizePolicy,
     QLabel, QComboBox
 )
 from PySide6.QtGui import QIcon,QPainter
@@ -47,10 +47,11 @@ class TOTPEditor(QWidget):
         submit_button = QPushButton("Submit")
         submit_button.clicked.connect(self.submit)
 
-        layout.addWidget(submit_button, alignment=Qt.AlignCenter)
+        layout.addWidget(submit_button, alignment=Qt.AlignHCenter)
 
         # Set the layout
         self.setLayout(layout)
+        self.setSizePolicy(QSizePolicy.Policy.Minimum,QSizePolicy.Policy.Minimum)
 
     def paintEvent(self, event):
         painter = QPainter(self)
