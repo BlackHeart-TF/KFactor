@@ -4,6 +4,7 @@ from PySide6.QtCore import Qt,QTimer
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (QMainWindow, QListWidget, QVBoxLayout, QHBoxLayout, QPushButton, QWidget,QListWidgetItem,QLabel,QGridLayout,QFrame,
                                 QProgressBar,QSizePolicy,QMessageBox)
+from Controls.SplitButton import SplitButton
 from GAuth.TotpCode import TotpCode
 from Function.KeyringHelper import KeyringHelper
 
@@ -46,9 +47,11 @@ class MainWindow(QMainWindow):
         
         # Add buttons to the sidebar (for demonstration purposes)
         add_icon = QIcon.fromTheme("list-add")
-        addButton = QPushButton(add_icon,"Add")
-        addButton.clicked.connect(self.scanCode
-                                  )
+        add_button = SplitButton(add_icon,"Add")
+        add_button.add_action("Camera", self.add_camera)
+        add_button.add_action("Serial", self.add_serial)
+        add_button.add_action("Manual", self.add_manual)
+        
         remove_icon = QIcon.fromTheme("list-remove")
         button4 = QPushButton(remove_icon,"Remove")
 
@@ -64,7 +67,7 @@ class MainWindow(QMainWindow):
         settingsbutton = QPushButton(settings_icon,"Settings")
         settingsbutton.clicked.connect(self.show_settings)
 
-        sidebarLayout.addWidget(addButton)
+        sidebarLayout.addWidget(add_button)
         sidebarLayout.addWidget(button4)
         sidebarLayout.addSpacing(25)
         sidebarLayout.addWidget(importButton)
@@ -92,21 +95,50 @@ class MainWindow(QMainWindow):
         msg_box.setStandardButtons(QMessageBox.Ok)
         msg_box.exec()
 
-    def scanCode(self,event):
+    def add_camera(self):
+        from Controls.QRCameraWidget import QRCameraWidget
+        self.camera = QRCameraWidget(self)
+        self.camera.codeScanned.connect(self.process_code_string)
+
+    def process_code_string(self,input:str):
+        from GAuth.GAuth import decode_url
+        if input and input.lower().startswith("otpauth"):
+            totps = decode_url(input)
+            if totps:
+                if len(totps) > 1:
+                    # TODO: allow individual selection
+                    pass
+                for code in totps:
+                    self.addItem(code)
+                return
+        
+        self.show_message("Invalid code scanned")
+
+    def show_message(self,message:str):
+        from Controls.ModalOverlay import ModalOverlay
+        from Controls.ModalMessageBox import ModalMessageBox
+        dlg = ModalOverlay(self,ModalMessageBox(self,message))
+        dlg.show()
+        return dlg
+    
+    def add_serial(self):
         from Controls.ModalOverlay import ModalOverlay
         from Controls.SerialScanBarcodePanel import SerialScanBarcodePanel
         dlg = ModalOverlay(self,SerialScanBarcodePanel())
         dlg.show()
         dlg.Wait()
         if dlg.content.code and dlg.content.code.lower().startswith("otpauth"):
-            totp = TotpCode.from_otpauth(dlg.content.code)
-            if totp:
-                self.addItem(totp)
-                self.keyring.store_totp_entry(totp.account,totp.to_dict())
-            else:
-                self.show_error("Error Parsing Code")
+            self.process_code_string(dlg.content.code)
         elif dlg.content.code:
             print(f"Invalid code, only otpauth accpeted: {dlg.content.code}")
+
+    def add_manual(self):
+        from Controls.ModalOverlay import ModalOverlay
+        from Controls.TotpEditor import TOTPEditor
+        editor = TOTPEditor()
+        dlg = ModalOverlay(self,editor)
+        dlg.show()
+        #dlg.Wait()
 
     def scanMigration(self,event):
         from Controls.ModalOverlay import ModalOverlay
@@ -125,8 +157,7 @@ class MainWindow(QMainWindow):
 
     def exportCode(self):
            from GAuth.GAuth import decode_url
-           migration = decode_url("otpauth-migration://offline?data=CjsKFHl4ZzJ2cUZRSlJpYWx0MDR4bERGEhRGaXJlZm94Om5vaXJlQGdteC5jYRoHRmlyZWZveCABKAEwAhABGAEgACiljsu5BQ%3D%3D")
-
+           
     def update_list(self):
         for i in range(self.listWidget.count()):
             item = self.listWidget.item(i)
