@@ -2,7 +2,7 @@ from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QFormLayout, QLineEdit, QPushButton, QSpinBox,
     QLabel, QComboBox
 )
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon,QPainter
 from PySide6.QtCore import QSize, Qt
 from GAuth.TotpCode import Algorithm
 
@@ -52,6 +52,13 @@ class TOTPEditor(QWidget):
         # Set the layout
         self.setLayout(layout)
 
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setBrush(self.palette().window().color())
+        painter.setPen(Qt.NoPen)
+        painter.drawRoundedRect(self.rect(), 10, 10)
+
     def submit(self):
         # Collect data from inputs
         name = self.name_input.text()
@@ -59,7 +66,7 @@ class TOTPEditor(QWidget):
         issuer = self.issuer_input.text()
         period = self.period_input.value()
         digits = self.digits_input.value()
-        algorithm = self.combo_box.itemData(index)
+        algorithm = self.combo_box.itemData(self.combo_box.currentIndex())
 
         # Print collected data (for now, can be replaced with further processing)
         print(f"Name: {name}")

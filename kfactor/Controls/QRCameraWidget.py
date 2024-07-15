@@ -1,30 +1,55 @@
 import cv2
 from pyzbar.pyzbar import decode
-from PySide6.QtCore import Slot, QTimer,Signal,QPoint
+from PySide6.QtCore import Qt, Slot, QTimer,Signal,QPoint,QEvent
 from PySide6.QtGui import QImage, QPixmap, QPainter, QColor,QPen
-from PySide6.QtWidgets import QApplication, QTextEdit,QLabel, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QApplication, QPushButton,QLabel, QGridLayout, QWidget,QSizePolicy
 
 class QRCameraWidget(QWidget):
     codeScanned = Signal(str)
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self,parent=None):
+        super().__init__(parent)
+
+        self.setSizePolicy(QSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding))
 
         self.camera_label = QLabel(self)
         self.camera_label.setScaledContents(True)
 
-        self.qr_result = QTextEdit(self)
-        self.qr_result.setReadOnly(True)
+        self.back_button = QPushButton("Back")
+        self.back_button.clicked.connect(self.close)
 
-        layout = QVBoxLayout(self)
-        layout.addWidget(self.camera_label)
-        layout.addWidget(self.qr_result)
+        layout = QGridLayout(self)
+        layout.addWidget(self.camera_label,0,0)
+        layout.addWidget(self.back_button,0,0,alignment=Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignTop)
         self.setLayout(layout)
 
         self.cap = cv2.VideoCapture(0)  # Open default camera (usually laptop camera)
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_frame)
-        self.timer.start(50)  # Update every 50 milliseconds
+        if not self.cap.isOpened():
+            oops = QLabel()
+            oops.setText("No Camera detected")
+            oops.setStyleSheet("font-size: 24px; font-weight: bold;")
+            layout.addWidget(oops,0,0,alignment=Qt.AlignmentFlag.AlignCenter|Qt.AlignmentFlag.AlignHCenter)
+        else:
+            self.timer = QTimer(self)
+            self.timer.timeout.connect(self.update_frame)
+            self.timer.start(50)  # Update every 50 milliseconds
+            
+        if parent:
+            self.setParent(parent)
+            self.resize(parent.size())
+            parent.installEventFilter(self)
+
+    def eventFilter(self, obj, event):
+        if obj == self.parent() and event.type() == QEvent.Resize:
+            self.resize(obj.size())  # Resize the overlay to match the parent's size
+        return super().eventFilter(obj, event)
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setBrush(self.palette().window().color())
+        painter.setPen(Qt.NoPen)
+        painter.drawRoundedRect(self.rect(), 10, 10)
 
     @Slot()
     def update_frame(self):
@@ -63,6 +88,6 @@ class QRCameraWidget(QWidget):
 
 if __name__ == "__main__":
     app = QApplication()
-    w = CameraWidget()
+    w = QRCameraWidget()
     w.show()
     app.exec()

@@ -35,7 +35,8 @@ class SerialScanBarcodePanel(QWidget):
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_ShowWithoutActivating)
         layout = QVBoxLayout(self)
-        layout.addWidget(QLabel("Scan Barcode"),alignment=Qt.AlignCenter)
+        self.label = QLabel("Scan Barcode")
+        layout.addWidget(self.label,alignment=Qt.AlignCenter)
         self.setLayout(layout)
 
     def barcodeRead(self,code):
@@ -51,7 +52,12 @@ class SerialScanBarcodePanel(QWidget):
         painter.drawRoundedRect(self.rect(), 10, 10)
 
     def showEvent(self,event):
-        self.serial.start(Config.get("SerialPort"),Config.get("SerialBaud"))
+        port = Config.get("SerialPort")
+        baud = Config.get("SerialBaud")
+        if port and baud:
+            self.serial.start(port,baud)
+        else:
+            self.label.setText("Port not set")
 
     def hideEvent(self,event):
         self.serial.stop()

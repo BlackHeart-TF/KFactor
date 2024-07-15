@@ -2,7 +2,7 @@ import sys,os
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from PySide6.QtCore import Qt,QTimer
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import (QMainWindow, QListWidget, QVBoxLayout, QHBoxLayout, QPushButton, QWidget,QListWidgetItem,QLabel,QGridLayout,QFrame,
+from PySide6.QtWidgets import (QMainWindow, QListWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QPushButton, QWidget,QListWidgetItem,QLabel,QGridLayout,QFrame,
                                 QProgressBar,QSizePolicy,QMessageBox)
 from Controls.SplitButton import SplitButton
 from GAuth.TotpCode import TotpCode
@@ -97,8 +97,9 @@ class MainWindow(QMainWindow):
 
     def add_camera(self):
         from Controls.QRCameraWidget import QRCameraWidget
-        self.camera = QRCameraWidget(self)
-        self.camera.codeScanned.connect(self.process_code_string)
+        camera = QRCameraWidget(self)
+        camera.codeScanned.connect(self.process_code_string)
+        camera.show()
 
     def process_code_string(self,input:str):
         from GAuth.GAuth import decode_url
