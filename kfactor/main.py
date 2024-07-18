@@ -54,6 +54,7 @@ class MainWindow(QMainWindow):
         
         remove_icon = QIcon.fromTheme("list-remove")
         button4 = QPushButton(remove_icon,"Remove")
+        button4.clicked.connect(self.remove_entry)
 
         export_icon = QIcon.fromTheme("document-save")
         exportButton = QPushButton(export_icon,"Export")
@@ -106,7 +107,6 @@ class MainWindow(QMainWindow):
                     pass
                 for code in totps:
                     self.addItem(code)
-                    self.keyring.store_totp_entry(code.account,code.to_dict())
                 return
         
         self.show_message("Invalid code scanned")
@@ -138,6 +138,20 @@ class MainWindow(QMainWindow):
         dlg.show()
         #dlg.Wait()
 
+    def remove_entry(self):
+        from Controls.ModalOverlay import ModalOverlay
+        from Controls.ModalMessageBox import ModalConfirmationBox
+        def deleteItems(confirm):
+            if not confirm:
+                return
+            for item in self.listWidget.selectedItems():
+                self.keyring.remove_entry(item.ID)
+
+        msg = ModalConfirmationBox(self,"Remove selected entry?")
+        msg.responded.connect(deleteItems)
+        dlg = ModalOverlay(self,msg)
+        dlg.show()
+
     def exportCode(self):
            #entries = self.keyring.retrieve_entries()
            pass
@@ -150,8 +164,9 @@ class MainWindow(QMainWindow):
     def showEvent(self, event):
         entries = self.keyring.retrieve_entries()
         if entries:
-            for name,entry in entries.items():
-                self.addItem(TotpCode.from_dict(entry),persist=False)
+            for id,entry in entries.items():
+                itm = self.addItem(TotpCode.from_dict(entry),persist=False)
+                itm.ID = id
         self.update_list()
         self.timer.start(500)
 
@@ -208,7 +223,8 @@ class MainWindow(QMainWindow):
         self.listWidget.setItemWidget(item, frame)
 
         if persist:
-            self.keyring.store_totp_entry(code)
+            self.ID = self.keyring.add_entry(code)
+        return item
 
     def showMenu(self):
         if self.sidebar.isVisible():

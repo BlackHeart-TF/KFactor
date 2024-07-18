@@ -5,12 +5,27 @@ class KeyringHelper:
     def __init__(self, service_name):
         self.service_name = service_name
 
-    def store_totp_entry(self, totp_data):
+    def add_entry(self, totp_data):
         entries = self.retrieve_entries()
         if not entries:
             entries = {}
-        sub_key:str = totp_data.account
+        sub_key = max([int(entry) for entry in entries.keys()]+[0]) +1
         entries[sub_key] = totp_data.to_dict()
+        self.store_entries(entries)
+        return sub_key
+
+    def update_entry(self,id, totp_data):
+        entries = self.retrieve_entries()
+        if not entries:
+            return
+        entries[id] = totp_data.to_dict()
+        self.store_entries(entries)
+
+    def remove_entry(self,id):
+        entries = self.retrieve_entries()
+        if not entries or id not in entries:
+            return
+        del entries[id]
         self.store_entries(entries)
 
     def retrieve_totp_entry(self, sub_key):

@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QWidget, QLabel,QPushButton, QGridLayout
-
+from PySide6.QtCore import Signal
 
 class ModalMessageBox(QWidget):
     def __init__(self, parent,message:str):
@@ -11,3 +11,36 @@ class ModalMessageBox(QWidget):
 
         self.ok_button = QPushButton("OK",parent)
         self.ok_button.clicked.connect(self.parent().close)
+
+        grid.addWidget(self.message_label,0,0,1,3)
+        grid.addWidget(self.ok_button,1,2)
+        self.setLayout(grid)
+
+class ModalConfirmationBox(QWidget):
+    responded = Signal(bool)
+
+    def __init__(self, parent,message:str):
+        super().__init__(parent)
+        
+        grid = QGridLayout(self)
+
+        self.message_label = QLabel(message,parent)
+
+        self.yes_button = QPushButton("Yes",parent)
+        self.yes_button.clicked.connect(self.Yes)
+
+        self.no_button = QPushButton("No",parent)
+        self.no_button.clicked.connect(self.No)
+
+        grid.addWidget(self.message_label,0,0,1,3)
+        grid.addWidget(self.yes_button,1,2)
+        grid.addWidget(self.no_button,1,1)
+        self.setLayout(grid)
+
+    def Yes(self):
+        self.responded.emit(True)
+        self.parent().close
+    
+    def No(self):
+        self.responded.emit(False)
+        self.parent().close

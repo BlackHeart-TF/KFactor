@@ -14,14 +14,14 @@ This is still very early in development and may change, always keep backups of y
 ### Working:
 - TOTP Code generation from Base32 keys
 - Internal parser for "otpauth" and "otpauth-migration" Uri from QR codes
-- Serial QR scanner support
-- Camera QR scanning support
+- Importing codes with serial barcode scanner, camera, or manual entry
 - Secure? key storage with 'keyring'
 
 ### Issues:
-- migration codes only work with sha1/6/30
+- migration codes are buggy, only sha1/6/30
+- Only supports Sha1
 - remove/export buttons not implemented
-- Manual code editor, not implemented
+- Code editing, not implemented
 - Not sure how secure dumping keys in kwallet is
 - No Export function (planning QR or JSON)
 

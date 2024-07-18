@@ -13,7 +13,7 @@ class TOTPEditor(QWidget):
         super().__init__()
 
         self.setWindowTitle("TOTP Manual Entry")
-
+        self.setFixedHeight(250)
         # Create layout
         layout = QVBoxLayout()
 
@@ -35,9 +35,11 @@ class TOTPEditor(QWidget):
         self.combo_box.addItem("SHA256", Algorithm.SHA256)
         self.combo_box.addItem("SHA512", Algorithm.SHA512)
         self.combo_box.addItem("MD5", Algorithm.MD5)
+        self.combo_box.setCurrentIndex(0)
+        self.combo_box.setEnabled(False)
         # Add form fields to layout
         form_layout.addRow("Name:", self.name_input)
-        form_layout.addRow("Secret Key:", self.secret_input)
+        form_layout.addRow("Base32 Key:", self.secret_input)
         form_layout.addRow("Issuer:", self.issuer_input)
         form_layout.addRow("Period:", self.period_input)
         form_layout.addRow("Digits:", self.digits_input)
@@ -61,6 +63,14 @@ class TOTPEditor(QWidget):
         painter.setBrush(self.palette().window().color())
         painter.setPen(Qt.NoPen)
         painter.drawRoundedRect(self.rect(), 10, 10)
+
+    def load(self,totp:TotpCode):
+        self.name_input.setText(totp.account)
+        self.secret_input.setText(totp.secret)
+        self.issuer_input.setText(totp.issuer)
+        self.period_input.setValue(totp.period)
+        self.digits_input.setValue(totp.digits)
+        self.combo_box.setCurrentIndex(self.combo_box.findData(totp.algorithm))
 
     def submit(self):
         # Collect data from inputs
