@@ -3,10 +3,12 @@ from PySide6.QtWidgets import (
     QLabel, QComboBox
 )
 from PySide6.QtGui import QIcon,QPainter
-from PySide6.QtCore import QSize, Qt
-from GAuth.TotpCode import Algorithm
+from PySide6.QtCore import QSize, Qt,Signal
+from GAuth.TotpCode import Algorithm,TotpCode
 
 class TOTPEditor(QWidget):
+    totpSaved = Signal(TotpCode)
+
     def __init__(self):
         super().__init__()
 
@@ -84,6 +86,9 @@ class TOTPEditor(QWidget):
         self.period_input.setValue(1)
         self.digits_input.setValue(1)
         self.combo_box.setCurrentIndex(0)
+        totp = TotpCode(name,secret,issuer,algorithm,digits,period)
+        self.totpSaved.emit(totp)
+        self.parent().close()
 
 
 class MainWindow(QMainWindow):

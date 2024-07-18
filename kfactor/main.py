@@ -13,7 +13,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.keyring = KeyringHelper("KFactor")
         #totp= TotpCode("test2","OBQXG43XN5ZGI===")
-        #self.keyring.store_totp_entry(totp.account,totp.to_dict())
+        #self.keyring.store_totp_entry(totp)
         self.initUI()
 
     def initUI(self):
@@ -133,13 +133,14 @@ class MainWindow(QMainWindow):
         from Controls.ModalOverlay import ModalOverlay
         from Controls.TotpEditor import TOTPEditor
         editor = TOTPEditor()
+        editor.totpSaved.connect(self.addItem)
         dlg = ModalOverlay(self,editor)
         dlg.show()
         #dlg.Wait()
 
-    
     def exportCode(self):
-           from GAuth.GAuth import decode_url
+           #entries = self.keyring.retrieve_entries()
+           pass
            
     def update_list(self):
         for i in range(self.listWidget.count()):
@@ -150,7 +151,7 @@ class MainWindow(QMainWindow):
         entries = self.keyring.retrieve_entries()
         if entries:
             for name,entry in entries.items():
-                self.addItem(TotpCode.from_dict(entry))
+                self.addItem(TotpCode.from_dict(entry),persist=False)
         self.update_list()
         self.timer.start(500)
 
@@ -164,7 +165,7 @@ class MainWindow(QMainWindow):
         overlay = ModalOverlay(self,self.settings_page)
         overlay.show()
 
-    def addItem(self,code:TotpCode):
+    def addItem(self,code:TotpCode,persist=True):
         item = QListWidgetItem()
         item.code = code
         frame = QFrame()
@@ -205,6 +206,9 @@ class MainWindow(QMainWindow):
         item.setSizeHint(frame.sizeHint())  # Adjust item size
         self.listWidget.addItem(item)
         self.listWidget.setItemWidget(item, frame)
+
+        if persist:
+            self.keyring.store_totp_entry(code)
 
     def showMenu(self):
         if self.sidebar.isVisible():
