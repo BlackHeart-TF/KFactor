@@ -55,10 +55,6 @@ class MainWindow(QMainWindow):
         remove_icon = QIcon.fromTheme("list-remove")
         button4 = QPushButton(remove_icon,"Remove")
 
-        import_icon = QIcon.fromTheme("document-open")
-        importButton = QPushButton(import_icon,"Import")
-        importButton.clicked.connect(self.scanMigration)
-
         export_icon = QIcon.fromTheme("document-save")
         exportButton = QPushButton(export_icon,"Export")
         exportButton.clicked.connect(self.exportCode)
@@ -70,7 +66,6 @@ class MainWindow(QMainWindow):
         sidebarLayout.addWidget(add_button)
         sidebarLayout.addWidget(button4)
         sidebarLayout.addSpacing(25)
-        sidebarLayout.addWidget(importButton)
         sidebarLayout.addWidget(exportButton)
         sidebarLayout.addStretch(1)
         sidebarLayout.addWidget(settingsbutton)
@@ -111,6 +106,7 @@ class MainWindow(QMainWindow):
                     pass
                 for code in totps:
                     self.addItem(code)
+                    self.keyring.store_totp_entry(code.account,code.to_dict())
                 return
         
         self.show_message("Invalid code scanned")
@@ -141,21 +137,7 @@ class MainWindow(QMainWindow):
         dlg.show()
         #dlg.Wait()
 
-    def scanMigration(self,event):
-        from Controls.ModalOverlay import ModalOverlay
-        from Controls.SerialScanBarcodePanel import SerialScanBarcodePanel
-        from GAuth.GAuth import decode_url
-        dlg = ModalOverlay(self,SerialScanBarcodePanel())
-        dlg.show()
-        dlg.Wait()
-        if dlg.content.code and dlg.content.code.lower().startswith("otpauth-migration://"):
-            migration = decode_url(dlg.content.code)
-            for totp in migration:
-                self.addItem(totp)
-                self.keyring.store_totp_entry(totp.account,totp.to_dict())
-        elif dlg.content.code:
-            print(f"Invalid code, only otpauth accpeted: {dlg.content.code}")
-
+    
     def exportCode(self):
            from GAuth.GAuth import decode_url
            

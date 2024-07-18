@@ -64,6 +64,7 @@ class QRCameraWidget(QWidget):
                 obj = decoded_objects[0]
                 self.highlight_qr_code(img,obj)
                 self.codeScanned.emit(obj.data.decode('utf-8'))
+                self.cap.release()
                 QTimer.singleShot(2000, self.close)
             
             pixmap = QPixmap.fromImage(img)
