@@ -23,6 +23,7 @@ This is still very early in development and may change, always keep backups of y
 - Code editing, not implemented
 - Not sure how secure dumping keys in kwallet is
 - No Export function (planning QR or JSON)
+- Settings are not persistant
 
 ## Installation
 It can be installed directly as a pip module with

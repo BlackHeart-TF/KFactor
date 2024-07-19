@@ -36,6 +36,15 @@ class SettingsPage(QWidget):
         title_label.setStyleSheet("font-size: 24px; font-weight: bold;")
         layout.addWidget(title_label)
 
+        # Camera Dropdown
+        camera_layout = QHBoxLayout()
+        camera_label = QLabel("Camera:", self)
+        self.camera_combobox = QComboBox(self)
+        self.populate_camera_list()
+        camera_layout.addWidget(camera_label)
+        camera_layout.addWidget(self.camera_combobox)
+        layout.addLayout(camera_layout)
+
         # Serial Port Dropdown
         serial_layout = QHBoxLayout()
         serial_label = QLabel("Serial Port:", self)
@@ -57,7 +66,24 @@ class SettingsPage(QWidget):
 
         self.setLayout(layout)
         save_button.clicked.connect(lambda: self.parent().close())
-        self.serial_combobox.currentIndexChanged.connect(self.save_settings)
+        self.camera_combobox.currentIndexChanged.connect(self.save_camera)
+        self.serial_combobox.currentIndexChanged.connect(self.save_serial)
+
+    def populate_camera_list(self):
+        camera_indices = self.detect_cameras()
+        self.camera_combobox.addItem(f"None", None)
+        for idx in camera_indices:
+            self.camera_combobox.addItem(f"Camera {idx}", idx)
+
+    def detect_cameras(self, max_cameras=10):
+        import cv2
+        camera_indices = []
+        for i in range(max_cameras):
+            cap = cv2.VideoCapture(i)
+            if cap.isOpened():
+                camera_indices.append(i)
+                cap.release()
+        return camera_indices
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -71,7 +97,11 @@ class SettingsPage(QWidget):
         for port in ports:
             self.serial_combobox.addItem(port)
 
-    def save_settings(self,event):
+    def save_camera(self,event):
+        selected_camera = self.camera_combobox.itemData(self.camera_combobox.currentIndex())
+        Config.set("CameraIDX",selected_camera)
+
+    def save_serial(self,event):
         selected_port = self.serial_combobox.currentText()
         selected_baud = int(self.serial_lineedit.text())
         Config.set("SerialPort",selected_port)

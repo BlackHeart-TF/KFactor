@@ -1,10 +1,13 @@
-import cv2
-from pyzbar.pyzbar import decode
+
 from PySide6.QtCore import Qt, Slot, QTimer,Signal,QPoint,QEvent
 from PySide6.QtGui import QImage, QPixmap, QPainter, QColor,QPen
 from PySide6.QtWidgets import QApplication, QPushButton,QLabel, QGridLayout, QWidget,QSizePolicy
+from Function.Config import Config
 
 class QRCameraWidget(QWidget):
+    import cv2
+    from pyzbar.pyzbar import decode
+
     codeScanned = Signal(str)
 
     def __init__(self,parent=None):
@@ -18,26 +21,31 @@ class QRCameraWidget(QWidget):
         self.back_button = QPushButton("Back")
         self.back_button.clicked.connect(self.close)
 
-        layout = QGridLayout(self)
-        layout.addWidget(self.camera_label,0,0)
-        layout.addWidget(self.back_button,0,0,alignment=Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignTop)
-        self.setLayout(layout)
+        self.layout = QGridLayout(self)
+        self.layout.addWidget(self.camera_label,0,0)
+        self.layout.addWidget(self.back_button,0,0,alignment=Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignTop)
+        self.setLayout(self.layout)
 
-        self.cap = cv2.VideoCapture(0)  # Open default camera (usually laptop camera)
-        if not self.cap.isOpened():
+        
+        if parent:
+            self.setParent(parent)
+            self.resize(parent.size())
+            parent.installEventFilter(self)
+
+    def showEvent(self,event):
+        index = Config.get("CameraIDX")
+        if index is not None:
+            self.cap = QRCameraWidget.cv2.VideoCapture(index)
+        if not index or not self.cap.isOpened():
             oops = QLabel()
             oops.setText("No Camera detected")
             oops.setStyleSheet("font-size: 24px; font-weight: bold;")
-            layout.addWidget(oops,0,0,alignment=Qt.AlignmentFlag.AlignCenter|Qt.AlignmentFlag.AlignHCenter)
+            self.layout.addWidget(oops,0,0,alignment=Qt.AlignmentFlag.AlignCenter|Qt.AlignmentFlag.AlignHCenter)
         else:
             self.timer = QTimer(self)
             self.timer.timeout.connect(self.update_frame)
             self.timer.start(50)  # Update every 50 milliseconds
             
-        if parent:
-            self.setParent(parent)
-            self.resize(parent.size())
-            parent.installEventFilter(self)
 
     def eventFilter(self, obj, event):
         if obj == self.parent() and event.type() == QEvent.Resize:

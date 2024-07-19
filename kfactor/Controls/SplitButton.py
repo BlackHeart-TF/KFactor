@@ -16,8 +16,7 @@ class SplitButton(QPushButton):
         action = self.menu.addAction(text)
         action.triggered.connect(func)
         action.triggered.connect(lambda x,action=action:self.setDefault(action))
-        # if not self.default_action:
-        #     self.default_action = action
+        return action
 
     def setDefault(self,action):
         self.default_action = action
