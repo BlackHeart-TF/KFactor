@@ -5,6 +5,7 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (QMainWindow, QListWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QPushButton, QWidget,QListWidgetItem,QLabel,QGridLayout,QFrame,
                                 QProgressBar,QSizePolicy,QMessageBox)
 from Controls.SplitButton import SplitButton
+from Controls.FocusOutHandler import FocusOutHandler
 from GAuth.TotpCode import TotpCode
 from Function.KeyringHelper import KeyringHelper
 
@@ -13,7 +14,8 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.keyring = KeyringHelper("KFactor")
         #totp= TotpCode("test2","OBQXG43XN5ZGI===")
-        #self.keyring.store_totp_entry(totp)
+        #print(str(totp))
+        #self.keyring.add_entry(totp)
         self.initUI()
 
     def initUI(self):
@@ -32,6 +34,7 @@ class MainWindow(QMainWindow):
         self.sidebar.setObjectName("sidebar")
         self.sidebar.setStyleSheet("#sidebar{ border-radius:0px;}")
         self.sidebar.setMaximumWidth(400)
+        
         # Create a main widget
         mainlayout = QVBoxLayout()
         self.menuButton = QPushButton("☰ KFactor")
@@ -81,7 +84,16 @@ class MainWindow(QMainWindow):
         # Setup QTimer to refresh every 5 seconds
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_list)
+
+        #sidebar autohide filter
+        focus_handler = FocusOutHandler(self.sidebarFocusOut,self.sidebar)
+        self.sidebar.installEventFilter(focus_handler)
+        for child in self.sidebar.findChildren(QWidget):
+            child.installEventFilter(focus_handler)
         
+    def sidebarFocusOut(self):
+        self.updateSidebarVisibility()
+
     def show_error(self,message:str):
         print(message)
         msg_box = QMessageBox()
@@ -141,15 +153,19 @@ class MainWindow(QMainWindow):
     def remove_entry(self):
         from Controls.ModalOverlay import ModalOverlay
         from Controls.ModalMessageBox import ModalConfirmationBox
+        msg = ModalConfirmationBox(self,"Remove selected entry?",300,100)
+        dlg = ModalOverlay(self,msg)
         def deleteItems(confirm):
+            dlg.close()
             if not confirm:
                 return
             for item in self.listWidget.selectedItems():
                 self.keyring.remove_entry(item.ID)
+                self.listWidget.takeItem(self.listWidget.row(item))
+            
 
-        msg = ModalConfirmationBox(self,"Remove selected entry?")
+        
         msg.responded.connect(deleteItems)
-        dlg = ModalOverlay(self,msg)
         dlg.show()
 
     def exportCode(self):
@@ -231,6 +247,7 @@ class MainWindow(QMainWindow):
             self.sidebar.hide()
         else:
             self.sidebar.show()
+            self.sidebar.setFocus()
 
     def customResizeEvent(self, event):
         # Override the resize event to handle sidebar visibility

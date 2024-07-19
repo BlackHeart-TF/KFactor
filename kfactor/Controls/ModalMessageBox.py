@@ -1,10 +1,11 @@
 from PySide6.QtWidgets import QWidget, QLabel,QPushButton, QGridLayout
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, Qt
+from PySide6.QtGui import QPainter
 
 class ModalMessageBox(QWidget):
-    def __init__(self, parent,message:str):
+    def __init__(self, parent,message:str,x:int,y:int):
         super().__init__(parent)
-        
+        self.setFixedSize(x,y)
         grid = QGridLayout(self)
 
         self.message_label = QLabel(message,parent)
@@ -16,12 +17,19 @@ class ModalMessageBox(QWidget):
         grid.addWidget(self.ok_button,1,2)
         self.setLayout(grid)
 
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setBrush(self.palette().window().color())
+        painter.setPen(Qt.NoPen)
+        painter.drawRoundedRect(self.rect(), 10, 10)
+
 class ModalConfirmationBox(QWidget):
     responded = Signal(bool)
 
-    def __init__(self, parent,message:str):
+    def __init__(self, parent,message:str,x:int,y:int):
         super().__init__(parent)
-        
+        self.setFixedSize(x,y)
         grid = QGridLayout(self)
 
         self.message_label = QLabel(message,parent)
@@ -44,3 +52,10 @@ class ModalConfirmationBox(QWidget):
     def No(self):
         self.responded.emit(False)
         self.parent().close
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setBrush(self.palette().window().color())
+        painter.setPen(Qt.NoPen)
+        painter.drawRoundedRect(self.rect(), 10, 10)

@@ -20,7 +20,6 @@ This is still very early in development and may change, always keep backups of y
 ### Issues:
 - migration codes are buggy, only sha1/6/30
 - Only supports Sha1
-- remove/export buttons not implemented
 - Code editing, not implemented
 - Not sure how secure dumping keys in kwallet is
 - No Export function (planning QR or JSON)
@@ -34,4 +33,4 @@ python -m kfactor
 
 ## Screenshots
 ### Pinephone Pro on Majaro
-![Pinephone Screenshot](https://i.imgur.com/TXtywTF.png)
+<img src="https://i.imgur.com/TXtywTF.png" width="200" />
