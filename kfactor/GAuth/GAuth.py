@@ -77,6 +77,35 @@ def encode_base32(input_bytes):
     encoded_string = encoded_bytes.decode('utf-8')
     
     return encoded_string
+def toMigrationCode(codes:list[TotpCode]):
+    data = bytearray()
+
+    data += bytearray([10]) #newline
+    for code in codes:
+        length_index = len(data)
+        data += bytearray([0]) #entry length
+        
+        data += bytearray([10]) #secret
+        encoded = base64.b32decode(code.secret)
+        data += bytearray(len(encoded))
+        data += bytearray(encoded, "utf-8")
+        
+        if code.account:
+            data += bytearray([0x12]) #account
+            encoded = code.account
+            data += bytearray(len(encoded))
+            data += bytearray(encoded, "utf-8")
+
+        if code.issuer:
+            data += bytearray([0x1a]) #issuer
+            encoded = code.issuer
+            data += bytearray(len(encoded))
+            data += bytearray(encoded, "utf-8")
+
+        data += bytearray([0x20,Algorithm.toInt(code.algorithm)]) #algo
+
+    return f"otpauth-migration://data={base64.b64encode(data)}"
+
 
 def parseExportData(data):
     if data[0] != 10:
@@ -88,12 +117,12 @@ def parseExportData(data):
     list = []
     while more:
         entry_len =  data[index+1] #seems to be length starting after key
-        val = hex(data[entry_len]),hex(data[entry_len+1]),hex(data[entry_len+2]),hex(data[entry_len+3])
+        #val = hex(data[entry_len]),hex(data[entry_len+1]),hex(data[entry_len+2]),hex(data[entry_len+3])
         iindex = index +1
         secret,account,issuer,algorithm,digits,period = None,None,None,"SHA1",6,30
-        hex_string = ''.join([f'{byte:02x} ' for byte in data])
-        print(hex_string)
-        hex_string = ''.join([f'{byte} ' for byte in data])
+        hex_string = ''.join([f'{byte:02x} ' for byte in data]) #debug
+        print(hex_string) #debug
+        hex_string = ''.join([f'{byte} ' for byte in data]) #debug
         for b in data:
             try:
                 # Decode the byte to a character if possible
@@ -103,9 +132,7 @@ def parseExportData(data):
                 # Use '.' for bytes that can't be decoded
                 print(f"{b:02x} {b} .")
 
-        #print(hex_string)
         while iindex < len(data):
-        #for i in range(3):
             
             fieldid = data[iindex+1]
             data_len = data[iindex+2]

@@ -18,6 +18,19 @@ class Algorithm:
             return "SHA512"
         elif index == 4:
             return "MD5"
+        
+    @staticmethod
+    def toInt(name:str):
+        if name == "SHA1":
+            return 0
+        elif name == "SHA1":
+            return 1
+        elif name == "SHA256":
+            return 2
+        elif name == "SHA512":
+            return 3
+        elif name == "MD5":
+            return 4
     
 class DigitCount:
     UNSPECIFIED = 0
