@@ -35,3 +35,5 @@ python -m kfactor
 ## Screenshots
 ### Pinephone Pro on Majaro
 <img src="https://i.imgur.com/TXtywTF.png" width="200" />
+### Kubuntu Desktop
+<img src="https://i.imgur.com/dODr9LJ.png" width="200" />

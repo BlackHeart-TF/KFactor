@@ -201,28 +201,31 @@ class MainWindow(QMainWindow):
         item.code = code
         frame = QFrame()
         frame.setFrameShape(QFrame.StyledPanel)
-        frame.setFrameShadow(QFrame.Raised)
+        #frame.setFrameShadow(QFrame.Raised)
         frame.setLineWidth(2)
         widget_layout = QGridLayout(frame)
+        widget_layout.setContentsMargins(0,0,0,0)
         widget_layout.setSpacing(0)
         # Title label
         title_label = QLabel(item.code.account)
+        title_label.setStyleSheet("padding: 2px 5px 0px 5px;")
         widget_layout.addWidget(title_label,0,0)
 
         # Large number area (assuming as QLabel)
         item.number_label = QLabel(str(item.code.GetCode()))
         item.number_label.setAlignment(Qt.AlignTop | Qt.AlignLeft) 
-        item.number_label.setStyleSheet("font-size: 24px;")
+        item.number_label.setStyleSheet("font-size: 24px;padding: 0px 0px 0px 5px;")
         widget_layout.addWidget(item.number_label,1,0)
 
         item.progress_bar = QProgressBar()
-        item.progress_bar.setOrientation(Qt.Vertical)
+        item.progress_bar.setOrientation(Qt.Horizontal)
         item.progress_bar.setMinimum(0)
         item.progress_bar.setMaximum(100)
         item.progress_bar.setValue(item.code.GetInterval())
         item.progress_bar.setTextVisible(False)
-        item.progress_bar.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Ignored)
-        widget_layout.addWidget(item.progress_bar,0,1,2,1)
+        item.progress_bar.setFixedHeight(10)
+        item.progress_bar.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Fixed)
+        widget_layout.addWidget(item.progress_bar,2,0,1,2)
 
         def update(self=item):
             self.number_label.setText(str(self.code.GetCode()))

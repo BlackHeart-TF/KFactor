@@ -103,6 +103,13 @@ def toMigrationCode(codes:list[TotpCode]):
             data += bytearray(encoded, "utf-8")
 
         data += bytearray([0x20,Algorithm.toInt(code.algorithm)]) #algo
+        data += bytearray([0x20,code.digits]) #
+        data += bytearray([0x28,code.period]) #
+        data += bytearray([0x30,code.period]) #otptype
+
+        entry_length = len(data) - length_index
+        data[length_index] = entry_length
+        
 
     return f"otpauth-migration://data={base64.b64encode(data)}"
 

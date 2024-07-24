@@ -115,7 +115,7 @@ class TotpCode:
         percentage = (TotpCode.time.time() % self.period) / self.period
         
         # Convert percentage to a range of 1-100
-        interval_percentage = 100-int(percentage * 100) 
+        interval_percentage = int(percentage * 100) 
         return interval_percentage
 
     def __str__(self):
